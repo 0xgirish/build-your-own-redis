@@ -52,7 +52,7 @@ func (s *String) ToResp() string {
 }
 
 func (s *String) FromResp(buffer *bytes.Buffer) error {
-	if _, err := fmt.Fscanf(buffer, ":%s\r\n", s); err != nil && err != io.EOF {
+	if _, err := fmt.Fscanf(buffer, "+%s\r\n", s); err != nil && err != io.EOF {
 		return err
 	}
 
