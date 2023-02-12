@@ -6,7 +6,11 @@ import (
 	"io"
 )
 
-var EmptyBulkString = BulkString("")
+var (
+	EmptyBulkString = BulkString("")
+	OK              = String("OK")
+	NIL             *Array
+)
 
 var _ error = (*Error)(nil)
 var _ Type = (*Int)(nil)
@@ -32,7 +36,7 @@ type Array struct {
 }
 
 func (i *Int) ToResp() string {
-	return fmt.Sprintf(":%d", *i)
+	return fmt.Sprintf(":%d\r\n", *i)
 }
 
 func (i *Int) FromResp(buffer *bytes.Buffer) error {
@@ -69,7 +73,7 @@ func (bs *BulkString) FromResp(buffer *bytes.Buffer) error {
 		return err
 	}
 
-	if size <= 0 {
+	if size < 0 {
 		return nil
 	}
 

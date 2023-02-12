@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"os"
+
+	"0xgirish.eth/redis/app/store"
 )
 
 func main() {
@@ -16,7 +18,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	var h ConnHandler = redisConnHandler{}
+	var h ConnHandler = redisConnHandler{
+		store: store.New(),
+	}
 
 	for {
 		conn, err := l.Accept()

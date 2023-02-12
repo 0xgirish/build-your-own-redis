@@ -8,6 +8,7 @@ import (
 
 	"0xgirish.eth/redis/app/resp"
 	"0xgirish.eth/redis/app/resp/types"
+	"0xgirish.eth/redis/app/store"
 )
 
 type CMD = string
@@ -16,15 +17,15 @@ const (
 	PING CMD = "PING"
 	SET  CMD = "SET"
 	GET  CMD = "GET"
+	DEL  CMD = "DEL"
 )
-
-var NIL *types.Array
 
 type ConnHandler interface {
 	Handle(net.Conn) error
 }
 
 type redisConnHandler struct {
+	store   *store.Store
 	scanner *resp.Scanner
 }
 
@@ -64,8 +65,15 @@ func (r *redisConnHandler) handle(token types.Type) types.Type {
 
 		switch tt := t.Index(0).(type) {
 		case *types.BulkString:
-			if strings.ToUpper(string(*tt)) == PING {
+			switch strings.ToUpper(string(*tt)) {
+			case PING:
 				return r.ping(t.CastBulkStringFrom(1))
+			case SET:
+				return r.set(t.CastBulkStringFrom(1))
+			case GET:
+				return r.get(t.CastBulkStringFrom(1))
+			case DEL:
+				return r.del(t.CastBulkStringFrom(1))
 			}
 
 		}
@@ -89,4 +97,40 @@ func (r *redisConnHandler) ping(args []types.BulkString) types.Type {
 	}
 
 	return &args[0]
+}
+
+func (r *redisConnHandler) set(args []types.BulkString) types.Type {
+	log.Println("handling set command")
+
+	if len(args) < 2 {
+		err := types.Error("ERR wrong number of arguments for 'set' command")
+		return &err
+	}
+
+	r.store.SET(args[0], args[1])
+	return &types.OK
+}
+
+func (r *redisConnHandler) get(args []types.BulkString) types.Type {
+	log.Println("handling get command")
+
+	if len(args) < 1 {
+		err := types.Error("ERR wrong number of arguments for 'set' command")
+		return &err
+	}
+
+	result := r.store.GET(args[0])
+	return &result
+}
+
+func (r *redisConnHandler) del(args []types.BulkString) types.Type {
+	log.Println("handling del command")
+
+	if len(args) < 1 {
+		err := types.Error("ERR wrong number of arguments for 'set' command")
+		return &err
+	}
+
+	result := r.store.DEL(args[0])
+	return &result
 }
