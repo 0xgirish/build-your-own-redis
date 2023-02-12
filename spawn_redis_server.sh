@@ -5,7 +5,8 @@
 # CodeCrafters uses this file to test your code. Don't make any changes here!
 #
 # DON'T EDIT THIS!
-set -e
+set -ex
+
 tmpFile=$(mktemp)
 go build -o "$tmpFile" app/*.go
 exec "$tmpFile"

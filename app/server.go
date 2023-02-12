@@ -15,9 +15,15 @@ func main() {
 		fmt.Println("Failed to bind to port 6379")
 		os.Exit(1)
 	}
-	_, err = l.Accept()
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+
+	var h ConnHandler = redisConnHandler{}
+
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			panic(fmt.Errorf("Error accepting connection: %w", err))
+		}
+
+		go h.Handle(conn)
 	}
 }
